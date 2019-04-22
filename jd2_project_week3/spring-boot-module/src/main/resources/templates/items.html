@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <h1>Items</h1>
+</head>
+<body>
+<h3>Add items</h3>
+<form action="#" th:action="@{/addItem}" th:object="${items}" method="post">
+    <table>
+        <tr>
+            <td>Name:</td>
+            <td><label>
+                <input type="text" th:field="*{name}"/>
+            </label></td>
+            <td th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</td>
+        </tr>
+        <tr>
+        <tr>
+            <td>
+                <button type="submit">Add Item</button>
+            </td>
+        </tr>
+    </table>
+</form>
+<h3>Show items</h3>
+<table>
+    <thead>
+    <tr>
+        <th>NAME</th>
+        <th>ITEM_STATUS</th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="items : ${itemsList}">
+        <form action="#" th:action="@{/updateItem}" th:object="${itemsList}" method="post">
+            <input hidden name="id" th:value="${items.id}">
+            <td th:text="${items.name}">name</td>
+            <td th:text="${items.item_status}">item status</td>
+            <td>
+                <select th:field="${items.item_status}">
+                    <option value="READY">READY</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                </select>
+            </td>
+            <td><input type="submit"/></td>
+        </form>
+    </tr>
+
+    </tbody>
+</table>
+</body>
+</html>
+
+
+

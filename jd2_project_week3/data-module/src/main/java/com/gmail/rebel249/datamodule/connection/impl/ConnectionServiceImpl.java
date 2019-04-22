@@ -11,11 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 @Component
 public class ConnectionServiceImpl implements ConnectionService {
@@ -50,21 +54,15 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     @PostConstruct
-    private void createDatabaseTables() {
+    public void createDatabaseTables() {
         try (Connection connection = getConnection()) {
-            String itemTableQuery = "CREATE TABLE IF NOT EXISTS item (" +
-                    "id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
-                    "name VARCHAR(40) NOT NULL, " +
-                    "item_status VARCHAR (30) NOT NULL)";
-            String auditItemTableQuery = "CREATE TABLE IF NOT EXISTS audit_item (" +
-                    "id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
-                    "date DATETIME, " +
-                    "action VARCHAR (30) NOT NULL)";
-            String alterTable = "ALTER TABLE audit_item ADD item_id BIGINT UNSIGNED NOT NULL, ADD FOREIGN KEY (item_id) REFERENCES item (id);";
             try (Statement statement = connection.createStatement()) {
-                statement.execute(itemTableQuery);
-                statement.execute(auditItemTableQuery);
-                statement.execute(alterTable);
+                String databaseCreatorFile = "sqlInitFile.sql";
+                String[] databaseInitFile = getQueries(databaseCreatorFile);
+                for (String databaseInitialQuery : databaseInitFile) {
+                    statement.addBatch(databaseInitialQuery);
+                }
+                statement.executeBatch();
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 throw new IllegalFormatStatementException("Cannot create statement");
@@ -72,6 +70,15 @@ public class ConnectionServiceImpl implements ConnectionService {
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new ConnectionStateException("Cannot create connection using properties");
+        }
+    }
+
+    private String[] getQueries(String initialFileName) {
+        try (Stream<String> fileStream = Files.lines(Paths.get(initialFileName))) {
+            return fileStream.reduce(String::concat).orElse("").split(";");
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            throw new ConnectionStateException("Cannot create connection");
         }
     }
 }

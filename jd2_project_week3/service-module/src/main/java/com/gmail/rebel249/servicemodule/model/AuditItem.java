@@ -4,7 +4,8 @@ import java.sql.Date;
 
 public class AuditItem {
     private Long id;
-    private ItemAction actionList;
+    private Long item_id;
+    private String action;
     private Date date;
 
     public Long getId() {
@@ -15,12 +16,20 @@ public class AuditItem {
         this.id = id;
     }
 
-    public ItemAction getActionList() {
-        return actionList;
+    public Long getItem_id() {
+        return item_id;
     }
 
-    public void setActionList(ItemAction actionList) {
-        this.actionList = actionList;
+    public void setItem_id(Long item_id) {
+        this.item_id = item_id;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 
     public Date getDate() {

@@ -6,10 +6,8 @@ import javax.validation.constraints.Size;
 public class ItemDTO {
     private Long id;
     @NotNull
-    @Size(min = 2, max = 30)
+    @Size(max = 40)
     private String name;
-    @NotNull
-    @Size(min = 2, max = 30)
     private String item_status;
 
     public Long getId() {

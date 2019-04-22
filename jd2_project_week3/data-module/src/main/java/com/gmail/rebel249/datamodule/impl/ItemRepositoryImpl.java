@@ -11,7 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +36,7 @@ public class ItemRepositoryImpl implements ItemRepository {
             String itemQuery = "INSERT INTO item (name, item_status) VALUES (?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(itemQuery, Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, item.getName());
-                preparedStatement.setString(2, item.getStatus());
+                preparedStatement.setString(2, "READY");
                 preparedStatement.executeUpdate();
                 try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
                     if (resultSet.next()) {
@@ -88,25 +92,20 @@ public class ItemRepositoryImpl implements ItemRepository {
         } catch (SQLException e) {
             logger.error(e.getMessage());
             throw new ConnectionStateException("Cannot create connection ");
-        }return 0;
+        }
+        return 0;
     }
 
     private Item getItem(ResultSet resultSet) {
         Item item = new Item();
         try {
-            if (resultSet.next()) {
-                item.setId(resultSet.getLong("id"));
-                item.setName(resultSet.getString("name"));
-                item.setStatus(resultSet.getString("item_status"));
-                return item;
-            }
+            item.setId(resultSet.getLong("id"));
+            item.setName(resultSet.getString("name"));
+            item.setStatus(resultSet.getString("item_status"));
+            return item;
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new IllegalDatabaseValueException("Database exception during getting items");
         }
-        return null;
-
     }
-
-
 }
